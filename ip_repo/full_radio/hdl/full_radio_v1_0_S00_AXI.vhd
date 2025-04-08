@@ -81,10 +81,33 @@ entity full_radio_v1_0_S00_AXI is
 		-- Read ready. This signal indicates that the master can
     		-- accept the read data and response information.
 		S_AXI_RREADY	: in std_logic
+		
 	);
 end full_radio_v1_0_S00_AXI;
 
 architecture arch_imp of full_radio_v1_0_S00_AXI is
+        -- User Signals
+        signal mult_1_a, mult_1_b, mult_2_a, mult_2_b : std_logic_vector(15 downto 0);
+        signal mult_1_p, mult_2_p : std_logic_vector(31 downto 0);
+        signal fake_adc_data, tuner_data : std_logic_vector(31 downto 0);
+        signal fake_adc_valid, tuner_valid : std_logic;
+  
+  -- Demodulated Signals
+  signal demod_real, demod_imag : std_logic_vector(31 downto 0);
+  signal demod : std_logic_vector(31 downto 0);
+  
+  -- Filter Signals
+  signal betweenFilterData_real : STD_LOGIC_VECTOR(39 downto 0);
+  signal betweenFilterValid_real, filter2Ready_real, filter1Ready_real, filter2Valid_real : STD_LOGIC;
+  signal filter2Data_real : STD_LOGIC_VECTOR(39 downto 0);
+  
+  signal betweenFilterData_imag : STD_LOGIC_VECTOR(39 downto 0);
+  signal betweenFilterValid_imag, filter2Ready_imag, filter1Ready_imag, filter2Valid_imag : STD_LOGIC;
+  signal filter2Data_imag : STD_LOGIC_VECTOR(39 downto 0);
+  
+  signal clockCounter : STD_LOGIC_VECTOR(31 downto 0);
+  
+  signal reset : STD_LOGIC;
 
 	-- AXI4LITE signals
 	signal axi_awaddr	: std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
@@ -129,6 +152,38 @@ COMPONENT dds_compiler_0
     m_axis_data_tdata : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)
   );
     END COMPONENT;
+    
+COMPONENT mult_16bit
+    PORT (
+        CLK : IN STD_LOGIC;
+        A : IN STD_LOGIC_VECTOR(15 downto 0);
+        B: IN STD_LOGIC_VECTOR(15 downto 0);
+        P : OUT STD_LOGIC_VECTOR(31 downto 0)
+    );
+END COMPONENT;
+  
+  component fir_compiler_0 IS
+  PORT (
+    aclk : IN STD_LOGIC;
+    s_axis_data_tvalid : IN STD_LOGIC;
+    s_axis_data_tready : OUT STD_LOGIC;
+    s_axis_data_tdata : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+    m_axis_data_tvalid : OUT STD_LOGIC;
+    m_axis_data_tready : IN STD_LOGIC;
+    m_axis_data_tdata : OUT STD_LOGIC_VECTOR(39 DOWNTO 0)
+  );
+END component;
+
+component fir_compiler_1 IS
+  PORT (
+    aclk : IN STD_LOGIC;
+    s_axis_data_tvalid : IN STD_LOGIC;
+    s_axis_data_tready : OUT STD_LOGIC;
+    s_axis_data_tdata : IN STD_LOGIC_VECTOR(15 DOWNTO 0);
+    m_axis_data_tvalid : OUT STD_LOGIC;
+    m_axis_data_tdata : OUT STD_LOGIC_VECTOR(39 DOWNTO 0)
+  );
+END component;
 
 begin
 	-- I/O Connections assignments
@@ -367,11 +422,11 @@ begin
 	      when b"00" =>
 	        reg_data_out <= slv_reg0;
 	      when b"01" =>
-	        reg_data_out <= x"DEADBEEF";
+	        reg_data_out <= slv_reg1;
 	      when b"10" =>
 	        reg_data_out <= slv_reg2;
 	      when b"11" =>
-	        reg_data_out <= slv_reg3;
+	        reg_data_out <= clockCounter;
 	      when others =>
 	        reg_data_out  <= (others => '0');
 	    end case;
@@ -397,18 +452,104 @@ begin
 
 
 	-- Add user logic here
+	reset <= not slv_reg2(0);
 
-your_instance_name : dds_compiler_0
+fake_adc : dds_compiler_0
   PORT MAP (
     aclk => s_axi_aclk,
-    aresetn => '1',
+    aresetn => reset,
     s_axis_phase_tvalid => '1',
     s_axis_phase_tdata => slv_reg0,
-    m_axis_data_tvalid => m_axis_tvalid,
-    m_axis_data_tdata => m_axis_tdata
+    m_axis_data_tvalid => fake_adc_valid,
+    m_axis_data_tdata => fake_adc_data
   );
 
 
+tuner : dds_compiler_0
+  PORT MAP (
+    aclk => s_axi_aclk,
+    aresetn => reset,
+    s_axis_phase_tvalid => '1',
+    s_axis_phase_tdata => slv_reg1,
+    m_axis_data_tvalid => tuner_valid,
+    m_axis_data_tdata => tuner_data
+  );
+  
+  mult1 : mult_16bit
+    PORT MAP (
+        CLK => s_axi_aclk,
+        A => mult_1_a,
+        B => mult_1_b,
+        P => mult_1_p
+    );
+  
+  mult2 : mult_16bit
+    PORT MAP (
+        CLK => s_axi_aclk,
+        A => mult_2_a,
+        B => mult_2_b,
+        P => mult_2_p
+        );
+        
+        mult_1_a <= fake_adc_data(15 downto 0);
+        mult_1_b <= tuner_data(15 downto 0);
+        mult_2_a <= fake_adc_data(31 downto 16);
+        mult_2_b <= tuner_data(31 downto 16);
+        -- Final demod is made by shifting both demod outputs by 14 and combining the resulting 16 bits into a single 32 bit
+        demod <= mult_1_p(29 downto 14) & mult_2_p(29 downto 14);
+        
+        
+    filter1_real: fir_compiler_0 port map (
+        aclk => s_axi_aclk,
+        s_axis_data_tvalid => fake_adc_valid,
+        s_axis_data_tready => filter1Ready_real,
+        s_axis_data_tdata => demod(15 downto 0),
+        m_axis_data_tvalid => betweenFilterValid_real,
+        m_axis_data_tready => filter2Ready_real,
+        m_axis_data_tdata => betweenFilterData_real
+        );
+        
+    filter2_real: fir_compiler_1 port map (
+        aclk => s_axi_aclk,
+        s_axis_data_tvalid => betweenFilterValid_real,
+        s_axis_data_tready => filter2Ready_real,
+        s_axis_data_tdata => betweenFilterData_real(35 downto 20),
+        m_axis_data_tvalid => filter2Valid_real,
+        m_axis_data_tdata => filter2Data_real
+        );
+        
+    filter1_imag: fir_compiler_0 port map (
+        aclk => s_axi_aclk,
+        s_axis_data_tvalid => fake_adc_valid,
+        s_axis_data_tready => filter1Ready_imag,
+        s_axis_data_tdata => demod(31 downto 16),
+        m_axis_data_tvalid => betweenFilterValid_imag,
+        m_axis_data_tready => filter2Ready_imag,
+        m_axis_data_tdata => betweenFilterData_imag
+        );
+        
+    filter2_imag: fir_compiler_1 port map (
+        aclk => s_axi_aclk,
+        s_axis_data_tvalid => betweenFilterValid_imag,
+        s_axis_data_tready => filter2Ready_imag,
+        s_axis_data_tdata => betweenFilterData_imag(35 downto 20),
+        m_axis_data_tvalid => filter2Valid_imag,
+        m_axis_data_tdata => filter2Data_imag
+        );
+        
+        m_axis_tdata(31 downto 16) <= filter2Data_imag(36 downto 21);
+        m_axis_tdata(15 downto 0) <= filter2Data_real(36 downto 21);
+        m_axis_tvalid <= filter2Ready_real;
+        
+        CountingClocks : process(s_axi_aclk)
+        begin
+            if reset = '0' then
+                clockCounter <= (others => '0');
+            elsif rising_edge(s_axi_aclk) then
+                clockCounter <= std_logic_vector(unsigned(clockCounter) + 1);
+            end if;
+        end process;
+        
 	-- User logic ends
 
 end arch_imp;
