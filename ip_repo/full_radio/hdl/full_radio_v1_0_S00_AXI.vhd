@@ -539,7 +539,7 @@ tuner : dds_compiler_0
         
         m_axis_tdata(31 downto 16) <= filter2Data_imag(36 downto 21);
         m_axis_tdata(15 downto 0) <= filter2Data_real(36 downto 21);
-        m_axis_tvalid <= filter2Ready_real;
+        m_axis_tvalid <= filter2Valid_real;
         
         CountingClocks : process(s_axi_aclk)
         begin

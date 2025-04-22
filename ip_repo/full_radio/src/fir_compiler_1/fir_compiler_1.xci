@@ -5,7 +5,7 @@
     "cell_name": "full_radio_v1_0_S00_AXI_inst/filter2_real",
     "component_reference": "xilinx.com:ip:fir_compiler:7.2",
     "ip_revision": "23",
-    "gen_directory": "../../../../../../../../../../../../../users/flipd/onedrive/documents/mastersdegree/2025_spring/fpga_soc/lab10/radio_periph_lab/vivado/radio_periph_lab.tmp/full_radio_v1_3_project/full_radio_v1_3_project.gen/sources_1/ip/fir_compiler_1",
+    "gen_directory": "../../../../../../fpga_soc/lab11/vivado/radio_periph_lab.tmp/full_radio_v1_4_project/full_radio_v1_4_project.gen/sources_1/ip/fir_compiler_1",
     "parameters": {
       "component_parameters": {
         "Component_Name": [ { "value": "fir_compiler_1", "resolve_type": "user", "usage": "all" } ],
@@ -179,7 +179,7 @@
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
         "IPREVISION": [ { "value": "23" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../../../../../../../../../../users/flipd/onedrive/documents/mastersdegree/2025_spring/fpga_soc/lab10/radio_periph_lab/vivado/radio_periph_lab.tmp/full_radio_v1_3_project/full_radio_v1_3_project.gen/sources_1/ip/fir_compiler_1" } ],
+        "OUTPUTDIR": [ { "value": "../../../../../../fpga_soc/lab11/vivado/radio_periph_lab.tmp/full_radio_v1_4_project/full_radio_v1_4_project.gen/sources_1/ip/fir_compiler_1" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
         "SWVERSION": [ { "value": "2024.2" } ],
