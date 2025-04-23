@@ -129,7 +129,7 @@ set bCheckIPsPassed 1
 set bCheckIPs 1
 if { $bCheckIPs == 1 } {
    set list_check_ips "\ 
-jhu.edu:user:full_radio:1.5\
+jhu.edu:user:full_radio:1.6\
 jhuapl.edu:user:lowlevel_dac_intfc:1.1\
 xilinx.com:ip:processing_system7:5.5\
 xilinx.com:ip:proc_sys_reset:5.0\
@@ -219,7 +219,7 @@ proc create_root_design { parentCell } {
   set sdata [ create_bd_port -dir O sdata ]
 
   # Create instance: full_radio_0, and set properties
-  set full_radio_0 [ create_bd_cell -type ip -vlnv jhu.edu:user:full_radio:1.5 full_radio_0 ]
+  set full_radio_0 [ create_bd_cell -type ip -vlnv jhu.edu:user:full_radio:1.6 full_radio_0 ]
 
   # Create instance: lowlevel_dac_intfc_0, and set properties
   set lowlevel_dac_intfc_0 [ create_bd_cell -type ip -vlnv jhuapl.edu:user:lowlevel_dac_intfc:1.1 lowlevel_dac_intfc_0 ]
@@ -628,19 +628,6 @@ proc create_root_design { parentCell } {
     CONFIG.S_TUSER_WIDTH {0} \
     CONFIG.TDEST_WIDTH {0} \
     CONFIG.TID_WIDTH {0} \
-  ] $axis_broadcaster_0
-
-  set_property -dict [list \
-    CONFIG.HAS_TKEEP.VALUE_MODE {auto} \
-    CONFIG.HAS_TLAST.VALUE_MODE {auto} \
-    CONFIG.HAS_TREADY.VALUE_MODE {auto} \
-    CONFIG.HAS_TSTRB.VALUE_MODE {auto} \
-    CONFIG.M_TDATA_NUM_BYTES.VALUE_MODE {auto} \
-    CONFIG.M_TUSER_WIDTH.VALUE_MODE {auto} \
-    CONFIG.S_TDATA_NUM_BYTES.VALUE_MODE {auto} \
-    CONFIG.S_TUSER_WIDTH.VALUE_MODE {auto} \
-    CONFIG.TDEST_WIDTH.VALUE_MODE {auto} \
-    CONFIG.TID_WIDTH.VALUE_MODE {auto} \
   ] $axis_broadcaster_0
 
 

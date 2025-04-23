@@ -5,7 +5,7 @@
     "cell_name": "full_radio_v1_0_S00_AXI_inst/mult1",
     "component_reference": "xilinx.com:ip:mult_gen:12.0",
     "ip_revision": "22",
-    "gen_directory": "../../../../../../fpga_soc/lab11/vivado/radio_periph_lab.tmp/full_radio_v1_4_project/full_radio_v1_4_project.gen/sources_1/ip/mult_16bit",
+    "gen_directory": "../../../../../../fpga_soc/lab11/vivado/radio_periph_lab.tmp/full_radio_v1_6_project/full_radio_v1_6_project.gen/sources_1/ip/mult_16bit",
     "parameters": {
       "component_parameters": {
         "InternalUser": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "all" } ],
@@ -69,7 +69,7 @@
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
         "IPREVISION": [ { "value": "22" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../../../fpga_soc/lab11/vivado/radio_periph_lab.tmp/full_radio_v1_4_project/full_radio_v1_4_project.gen/sources_1/ip/mult_16bit" } ],
+        "OUTPUTDIR": [ { "value": "../../../../../../fpga_soc/lab11/vivado/radio_periph_lab.tmp/full_radio_v1_6_project/full_radio_v1_6_project.gen/sources_1/ip/mult_16bit" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
         "SWVERSION": [ { "value": "2024.2" } ],

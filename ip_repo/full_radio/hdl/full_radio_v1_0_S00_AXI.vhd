@@ -108,6 +108,7 @@ architecture arch_imp of full_radio_v1_0_S00_AXI is
   signal clockCounter : STD_LOGIC_VECTOR(31 downto 0);
   
   signal reset : STD_LOGIC;
+  signal allowValid : STD_LOGIC;
 
 	-- AXI4LITE signals
 	signal axi_awaddr	: std_logic_vector(C_S_AXI_ADDR_WIDTH-1 downto 0);
@@ -453,6 +454,7 @@ begin
 
 	-- Add user logic here
 	reset <= not slv_reg2(0);
+	allowValid <= slv_reg2(1);
 
 fake_adc : dds_compiler_0
   PORT MAP (
@@ -539,7 +541,9 @@ tuner : dds_compiler_0
         
         m_axis_tdata(31 downto 16) <= filter2Data_imag(36 downto 21);
         m_axis_tdata(15 downto 0) <= filter2Data_real(36 downto 21);
-        m_axis_tvalid <= filter2Valid_real;
+        
+        -- Only pass the Valid signal through if the slv_reg2(1) bit is 1
+        m_axis_tvalid <= filter2Valid_real when allowValid = '1' else '0';
         
         CountingClocks : process(s_axi_aclk)
         begin
